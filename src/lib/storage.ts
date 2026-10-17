@@ -83,5 +83,12 @@ export async function readMediaFile(
 
 export function mediaUrl(storageKey: string | null | undefined): string | null {
   if (!storageKey) return null;
+  if (
+    storageKey.startsWith("http://") ||
+    storageKey.startsWith("https://") ||
+    storageKey.startsWith("//")
+  ) {
+    return storageKey;
+  }
   return `/api/v1/media/${storageKey.split("/").map(encodeURIComponent).join("/")}`;
 }

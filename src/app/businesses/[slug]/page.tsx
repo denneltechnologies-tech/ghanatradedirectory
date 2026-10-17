@@ -7,7 +7,7 @@ import { listComments, getLikeState } from "@/lib/services/engagement";
 import { getCurrentUser } from "@/lib/auth";
 import { canManageBusiness } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
-import { formatMoney, humanizeEnum, initials, safeHttpUrl, truncate } from "@/lib/format";
+import { humanizeEnum, initials, safeHttpUrl, truncate } from "@/lib/format";
 import { mediaUrl } from "@/lib/storage";
 import { mapsHref } from "@/lib/client-links";
 import { VerificationBadge } from "@/components/badges";
@@ -19,6 +19,8 @@ import { ReportDialog } from "@/components/report-dialog";
 import { CommentSection } from "@/components/comment-section";
 import { ClaimForm } from "@/components/claim-form";
 import { businessCardInclude } from "@/lib/search";
+import { getBusinessCover, getBusinessLogo } from "@/lib/sector-media";
+import { BusinessOfferingsSection } from "@/components/business-offerings-section";
 
 const getBusiness = cache(async (slug: string) => getPublicBusiness(slug));
 
@@ -30,7 +32,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const business = await getBusiness(slug);
   if (!business) return { title: "Business not found" };
-  const cover = mediaUrl(business.coverKey) ?? mediaUrl(business.logoKey);
+  const cover = getBusinessCover(business);
   return {
     title: business.name,
     description: truncate(business.description, 155),
@@ -78,8 +80,8 @@ export default async function BusinessProfilePage({
   ]);
 
   const isOwner = user ? await canManageBusiness(user, business.id) : false;
-  const cover = mediaUrl(business.coverKey);
-  const logo = mediaUrl(business.logoKey);
+  const cover = getBusinessCover(business);
+  const logo = getBusinessLogo(business);
   const location = business.locations[0];
   const mapQuery = mapsHref([
     location?.address,
@@ -93,21 +95,17 @@ export default async function BusinessProfilePage({
 
   return (
     <div className="container-page py-6">
-      <div className="relative mb-4 h-44 w-full overflow-hidden rounded-xl bg-gradient-to-br from-brand-100 to-gold-100 sm:h-60">
-        {cover ? (
-           
-          <img src={cover} alt={`${business.name} cover`} className="h-full w-full object-cover" />
-        ) : null}
+      <div className="relative mb-4 h-48 w-full overflow-hidden rounded-xl bg-ink-100 sm:h-64 shadow-xs">
+        <img src={cover} alt={`${business.name} cover`} className="h-full w-full object-cover" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="space-y-6">
           <header className="card p-5">
             <div className="flex flex-wrap items-start gap-4">
-              <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand-600 text-lg font-bold text-white">
+              <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-ink-100 bg-white shadow-sm text-lg font-bold text-brand-700">
                 {logo ? (
-                   
-                  <img src={logo} alt={`${business.name} logo`} className="h-full w-full object-cover" />
+                  <img src={logo} alt={`${business.name} logo`} className="h-full w-full object-contain p-1.5" />
                 ) : (
                   initials(business.name)
                 )}
@@ -170,47 +168,8 @@ export default async function BusinessProfilePage({
             </div>
           </header>
 
-          {business.offerings.length > 0 ? (
-            <section className="card p-5">
-              <h2 className="section-title">Products &amp; services</h2>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                {business.offerings.map((offering) => {
-                  const image = mediaUrl(offering.media[0]?.storageKey ?? null);
-                  const price = formatMoney(offering.priceAmount, offering.currency);
-                  return (
-                    <Link
-                      key={offering.id}
-                      href={`${path}/offerings/${offering.id}`}
-                      className="card card-hover flex gap-3 overflow-hidden p-3"
-                    >
-                      <span className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-ink-100">
-                        {image ? (
-                           
-                          <img src={image} alt={offering.title} className="h-full w-full object-cover" />
-                        ) : (
-                          <span className="flex h-full w-full items-center justify-center text-xl" aria-hidden>
-                            {offering.type === "SERVICE" ? "🛠️" : "📦"}
-                          </span>
-                        )}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate font-medium text-ink-900">{offering.title}</span>
-                        <span className="mt-0.5 block text-xs text-ink-500">
-                          {humanizeEnum(offering.type)}
-                          {price ? ` · ${price}` : offering.priceLabel ? ` · ${offering.priceLabel}` : ""}
-                        </span>
-                        {offering.description ? (
-                          <span className="mt-1 block text-xs text-ink-600">
-                            {truncate(offering.description, 80)}
-                          </span>
-                        ) : null}
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </section>
-          ) : null}
+          {/* Products & Services section positioned between description and comments */}
+          <BusinessOfferingsSection business={business} />
 
           {business.longDescription ? (
             <section className="card p-5">
