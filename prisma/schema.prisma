@@ -1,0 +1,846 @@
+// Ghana Business Directory — data model
+// See PRD section 17 "Core data model".
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Accounts, roles, sessions
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  CUSTOMER
+  BUSINESS_OWNER
+  LOGISTICS_PROVIDER
+  MODERATOR
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DEACTIVATED
+}
+
+model User {
+  id              String     @id @default(cuid())
+  email           String     @unique
+  passwordHash    String
+  displayName     String
+  phone           String?
+  role            UserRole   @default(CUSTOMER)
+  status          UserStatus @default(ACTIVE)
+  emailVerifiedAt DateTime?
+  phoneVerifiedAt DateTime?
+  consentAt       DateTime?
+  lastLoginAt     DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  sessions            Session[]
+  passwordResetTokens PasswordResetToken[]
+  businesses          Business[]            @relation("BusinessOwner")
+  memberships         BusinessMember[]
+  likes               Like[]
+  comments            Comment[]
+  reports             Report[]              @relation("ReportReporter")
+  assignedReports     Report[]              @relation("ReportAssignee")
+  moderationEvents    ModerationEvent[]
+  claims              Claim[]               @relation("ClaimClaimant")
+  reviewedClaims      Claim[]               @relation("ClaimReviewer")
+  verificationEvents  VerificationEvent[]
+  logisticsProfiles   LogisticsProfile[]
+  quoteRequests       QuoteRequest[]
+  quoteResponses      QuoteResponse[]
+  notifications       Notification[]
+  auditEvents         AuditEvent[]
+  analyticsEvents     AnalyticsEvent[]
+
+  @@index([role])
+  @@index([status])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  userAgent String?
+  ip        String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Taxonomy and Ghana location hierarchy
+// ---------------------------------------------------------------------------
+
+model Category {
+  id          String  @id @default(cuid())
+  parentId    String?
+  name        String
+  slug        String  @unique
+  icon        String?
+  description String?
+  active      Boolean @default(true)
+  featured    Boolean @default(false)
+  sortOrder   Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children Category[] @relation("CategoryTree")
+  businesses Business[]
+
+  @@index([parentId])
+  @@index([active, sortOrder])
+}
+
+model Region {
+  id      String @id @default(cuid())
+  name    String @unique
+  slug    String @unique
+  capital String?
+  code    String?
+
+  districts        District[]
+  businessLocations BusinessLocation[]
+  serviceAreas     ServiceArea[]
+  pickupRequests   QuoteRequest[] @relation("QuotePickupRegion")
+  dropoffRequests  QuoteRequest[] @relation("QuoteDropoffRegion")
+  logisticsBase    LogisticsProfile[]
+
+  @@index([name])
+}
+
+model District {
+  id       String @id @default(cuid())
+  regionId String
+  name     String
+  slug     String
+  kind     String?
+
+  region            Region             @relation(fields: [regionId], references: [id], onDelete: Cascade)
+  businessLocations BusinessLocation[]
+  serviceAreas      ServiceArea[]
+  pickupRequests    QuoteRequest[]     @relation("QuotePickupDistrict")
+  dropoffRequests   QuoteRequest[]     @relation("QuoteDropoffDistrict")
+  logisticsBase     LogisticsProfile[]
+
+  @@unique([regionId, slug])
+  @@index([regionId])
+}
+
+model BusinessLocation {
+  id         String  @id @default(cuid())
+  businessId String
+  regionId   String
+  districtId String?
+  locality   String?
+  address    String?
+  landmark   String?
+  latitude   Float?
+  longitude  Float?
+  isPublic   Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  business Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  region   Region    @relation(fields: [regionId], references: [id])
+  district District? @relation(fields: [districtId], references: [id])
+
+  @@index([businessId])
+  @@index([regionId])
+  @@index([districtId])
+}
+
+// ---------------------------------------------------------------------------
+// Businesses, offerings, media
+// ---------------------------------------------------------------------------
+
+enum BusinessStatus {
+  DRAFT
+  PENDING_REVIEW
+  PUBLISHED
+  REJECTED
+  SUSPENDED
+  ARCHIVED
+}
+
+enum ImportSource {
+  OSM
+  GOOGLE
+  PARTNER
+  CSV
+}
+
+enum VerificationLevel {
+  UNVERIFIED
+  CONTACT_CONFIRMED
+  DOCUMENTS_REVIEWED
+  LOCATION_CHECKED
+}
+
+enum MemberRole {
+  PRIMARY
+  MANAGER
+}
+
+enum OfferingType {
+  PRODUCT
+  SERVICE
+}
+
+enum OfferingStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum MediaKind {
+  LOGO
+  COVER
+  OFFERING
+  OTHER
+}
+
+enum MediaStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Business {
+  id           String   @id @default(cuid())
+  ownerId      String
+  categoryId   String
+  name         String
+  slug         String   @unique
+  description  String
+  longDescription String?
+
+  status            BusinessStatus    @default(DRAFT)
+  verificationLevel VerificationLevel @default(UNVERIFIED)
+  verifiedAt        DateTime?
+
+  phone          String?
+  whatsapp       String?
+  email          String?
+  website        String?
+  facebook       String?
+  instagram      String?
+  tiktok         String?
+  twitter        String?
+  contactHours   String?
+  preferredChannel String?
+
+  logoKey            String?
+  coverKey           String?
+  registrationName   String?
+  registrationId     String?
+  deliveryOffered    Boolean  @default(false)
+  paymentMethods     String[] @default([])
+  languages          String[] @default([])
+  tags               String[] @default([])
+  accessibilityNotes String?
+
+  featured       Boolean   @default(false)
+  viewCount      Int       @default(0)
+  lastUpdatedAt  DateTime  @default(now())
+  publishedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  // Provenance for imported / unclaimed listings
+  source        ImportSource?
+  sourceRef     String?
+  sourceUrl     String?
+  claimed       Boolean       @default(true)
+  importBatchId String?
+
+  owner            User               @relation("BusinessOwner", fields: [ownerId], references: [id])
+  category         Category           @relation(fields: [categoryId], references: [id])
+  members          BusinessMember[]
+  locations        BusinessLocation[]
+  offerings        Offering[]
+  media            Media[]
+  likes            Like[]
+  comments         Comment[]
+  reports          Report[]
+  claims           Claim[]
+  verificationEvents VerificationEvent[]
+  logisticsProfile LogisticsProfile?
+  quoteRequests    QuoteRequest[]
+  analyticsEvents  AnalyticsEvent[]
+  subscriptions    Subscription[]
+
+  @@index([status, publishedAt])
+  @@index([categoryId])
+  @@index([featured])
+  @@index([ownerId])
+  @@index([name])
+  @@unique([source, sourceRef])
+}
+
+model BusinessMember {
+  id         String     @id @default(cuid())
+  businessId String
+  userId     String
+  role       MemberRole @default(MANAGER)
+  createdAt  DateTime   @default(now())
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, userId])
+  @@index([userId])
+}
+
+model Offering {
+  id           String         @id @default(cuid())
+  businessId   String
+  type         OfferingType   @default(PRODUCT)
+  title        String
+  description  String?
+  priceAmount  Decimal?       @db.Decimal(12, 2)
+  currency     String         @default("GHS")
+  priceLabel   String?
+  availability String?
+  deliveryNote String?
+  actionUrl    String?
+  status       OfferingStatus @default(ACTIVE)
+  sortOrder    Int            @default(0)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  business       Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  media          Media[]
+  analyticsEvents AnalyticsEvent[]
+
+  @@index([businessId, status])
+  @@index([title])
+}
+
+model Media {
+  id         String      @id @default(cuid())
+  businessId String?
+  offeringId String?
+  kind       MediaKind   @default(OTHER)
+  storageKey String
+  mimeType   String
+  sizeBytes  Int?
+  width      Int?
+  height     Int?
+  altText    String?
+  status     MediaStatus @default(APPROVED)
+  sortOrder  Int         @default(0)
+
+  createdAt DateTime @default(now())
+
+  business Business? @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  offering Offering? @relation(fields: [offeringId], references: [id], onDelete: Cascade)
+
+  @@index([businessId])
+  @@index([offeringId])
+}
+
+// ---------------------------------------------------------------------------
+// Community: likes, comments, reports, moderation, claims, verification
+// ---------------------------------------------------------------------------
+
+model Like {
+  id         String   @id @default(cuid())
+  userId     String
+  businessId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, businessId])
+  @@index([businessId])
+}
+
+enum CommentStatus {
+  VISIBLE
+  HIDDEN
+  REMOVED
+}
+
+model Comment {
+  id         String        @id @default(cuid())
+  businessId String
+  authorId   String
+  parentId   String?
+  body       String
+  status     CommentStatus @default(VISIBLE)
+  editedAt   DateTime?
+  deletedAt  DateTime?
+  createdAt  DateTime      @default(now())
+
+  business        Business         @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  author          User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent          Comment?         @relation("CommentReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies         Comment[]        @relation("CommentReplies")
+  moderationEvents ModerationEvent[]
+
+  @@index([businessId, status, createdAt])
+  @@index([authorId])
+}
+
+enum ReportTargetType {
+  BUSINESS
+  OFFERING
+  COMMENT
+  LOGISTICS_PROVIDER
+  USER
+}
+
+enum ReportReason {
+  DUPLICATE
+  INACCURATE
+  SUSPICIOUS
+  OUTDATED
+  OFFENSIVE
+  SPAM
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+model Report {
+  id           String           @id @default(cuid())
+  targetType   ReportTargetType
+  targetId     String
+  businessId   String?
+  reporterId   String?
+  reason       ReportReason
+  detail       String?
+  status       ReportStatus     @default(OPEN)
+  assignedToId String?
+  resolutionNote String?
+  resolvedAt   DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  business   Business? @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  reporter   User?     @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: SetNull)
+  assignedTo User?     @relation("ReportAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([targetType, targetId])
+  @@index([businessId])
+}
+
+enum ModerationActionType {
+  HIDE_COMMENT
+  RESTORE_COMMENT
+  REMOVE_COMMENT
+  APPROVE_BUSINESS
+  REJECT_BUSINESS
+  SUSPEND_BUSINESS
+  RESTORE_BUSINESS
+  ARCHIVE_BUSINESS
+  DISMISS_REPORT
+  RESOLVE_REPORT
+  VERIFY_BUSINESS
+  WARN_USER
+  SUSPEND_USER
+  REINSTATE_USER
+  FEATURE_BUSINESS
+  UNFEATURE_BUSINESS
+  APPROVE_MEDIA
+  REJECT_MEDIA
+  APPROVE_CLAIM
+  REJECT_CLAIM
+}
+
+model ModerationEvent {
+  id          String               @id @default(cuid())
+  action      ModerationActionType
+  targetType  String
+  targetId    String
+  actorId     String
+  businessId  String?
+  commentId   String?
+  note        String?
+  createdAt   DateTime             @default(now())
+
+  actor   User     @relation(fields: [actorId], references: [id], onDelete: Cascade)
+  comment Comment? @relation(fields: [commentId], references: [id], onDelete: SetNull)
+
+  @@index([targetType, targetId])
+  @@index([createdAt])
+  @@index([actorId])
+}
+
+enum ClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Claim {
+  id           String      @id @default(cuid())
+  businessId   String
+  claimantId   String
+  evidence     String
+  contactPhone String?
+  status       ClaimStatus @default(PENDING)
+  reviewedById String?
+  reviewedAt   DateTime?
+  decisionNote String?
+  createdAt    DateTime    @default(now())
+
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  claimant   User     @relation("ClaimClaimant", fields: [claimantId], references: [id], onDelete: Cascade)
+  reviewedBy User?    @relation("ClaimReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([businessId])
+}
+
+model VerificationEvent {
+  id         String            @id @default(cuid())
+  businessId String
+  actorId    String?
+  level      VerificationLevel
+  evidence   String?
+  note       String?
+  createdAt  DateTime          @default(now())
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  actor    User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([businessId])
+}
+
+// ---------------------------------------------------------------------------
+// Logistics directory and quote workflow (kept separate from commerce)
+// ---------------------------------------------------------------------------
+
+enum LogisticsServiceType {
+  COURIER
+  PARCEL
+  HAULAGE
+  PASSENGER_TRANSPORT
+  COLD_CHAIN
+  WAREHOUSING
+  FREIGHT_FORWARDING
+  MOVING
+  OTHER
+}
+
+enum CoverageScope {
+  LOCAL
+  INTERCITY
+  NATIONWIDE
+  CROSS_BORDER
+}
+
+model LogisticsProfile {
+  id           String  @id @default(cuid())
+  businessId   String  @unique
+  userId       String
+  description  String
+  serviceTypes LogisticsServiceType[] @default([])
+  coverage     CoverageScope[]        @default([])
+  baseRegionId   String?
+  baseDistrictId String?
+  namedRoutes  String[] @default([])
+  vehicleTypes String[] @default([])
+  capacityMinKg Decimal? @db.Decimal(12, 2)
+  capacityMaxKg Decimal? @db.Decimal(12, 2)
+  operatingHours String?
+  trackingMethod String?
+  insurancePolicy String?
+  responseHours  Int?
+  contactChannel String?
+  verifiedLevel  VerificationLevel @default(UNVERIFIED)
+  active         Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  business         Business         @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  baseRegion       Region?          @relation(fields: [baseRegionId], references: [id], onDelete: SetNull)
+  baseDistrict     District?        @relation(fields: [baseDistrictId], references: [id], onDelete: SetNull)
+  serviceAreas     ServiceArea[]
+  recipients       QuoteRequestRecipient[]
+  responses        QuoteResponse[]
+  analyticsEvents  AnalyticsEvent[]
+
+  @@index([active])
+  @@index([userId])
+}
+
+model ServiceArea {
+  id                  String         @id @default(cuid())
+  logisticsProfileId  String
+  regionId            String?
+  districtId          String?
+  scope               CoverageScope  @default(LOCAL)
+  note                String?
+  createdAt           DateTime       @default(now())
+
+  logisticsProfile LogisticsProfile @relation(fields: [logisticsProfileId], references: [id], onDelete: Cascade)
+  region           Region?          @relation(fields: [regionId], references: [id], onDelete: SetNull)
+  district         District?        @relation(fields: [districtId], references: [id], onDelete: SetNull)
+
+  @@index([logisticsProfileId])
+}
+
+enum QuoteRequestStatus {
+  DRAFT
+  SENT
+  RESPONSES_RECEIVED
+  ACCEPTED
+  CANCELLED
+  CLOSED
+}
+
+model QuoteRequest {
+  id               String             @id @default(cuid())
+  requesterId      String
+  requesterBusinessId String?
+  serviceType      LogisticsServiceType
+  pickupRegionId   String
+  pickupDistrictId String?
+  pickupDetails    String
+  dropoffRegionId  String
+  dropoffDistrictId String?
+  dropoffDetails   String
+  requestedDate    DateTime?
+  timeWindow       String?
+  cargoType        String?
+  cargoDescription String?
+  weightKg         Decimal?           @db.Decimal(12, 2)
+  quantity         Int?
+  vehicleNeeds     String?
+  specialHandling  String?
+  notes            String?
+  contactName      String
+  contactPhone     String
+  contactEmail     String?
+  consentShare     Boolean            @default(false)
+  consentAt        DateTime?
+  status           QuoteRequestStatus @default(DRAFT)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  requester       User     @relation(fields: [requesterId], references: [id], onDelete: Cascade)
+  requesterBusiness Business? @relation(fields: [requesterBusinessId], references: [id], onDelete: SetNull)
+  pickupRegion    Region   @relation("QuotePickupRegion", fields: [pickupRegionId], references: [id])
+  pickupDistrict  District? @relation("QuotePickupDistrict", fields: [pickupDistrictId], references: [id])
+  dropoffRegion   Region   @relation("QuoteDropoffRegion", fields: [dropoffRegionId], references: [id])
+  dropoffDistrict District? @relation("QuoteDropoffDistrict", fields: [dropoffDistrictId], references: [id])
+  recipients      QuoteRequestRecipient[]
+  responses       QuoteResponse[]
+  analyticsEvents AnalyticsEvent[]
+
+  @@index([requesterId, status])
+  @@index([status, createdAt])
+}
+
+model QuoteRequestRecipient {
+  id                 String    @id @default(cuid())
+  quoteRequestId     String
+  logisticsProfileId String
+  seenAt             DateTime?
+  createdAt          DateTime  @default(now())
+
+  quoteRequest     QuoteRequest     @relation(fields: [quoteRequestId], references: [id], onDelete: Cascade)
+  logisticsProfile LogisticsProfile @relation(fields: [logisticsProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([quoteRequestId, logisticsProfileId])
+  @@index([logisticsProfileId])
+}
+
+enum QuoteResponseStatus {
+  SUBMITTED
+  ACCEPTED
+  DECLINED
+  WITHDRAWN
+  EXPIRED
+}
+
+model QuoteResponse {
+  id                 String              @id @default(cuid())
+  quoteRequestId     String
+  logisticsProfileId String
+  providerUserId     String
+  priceAmount        Decimal?            @db.Decimal(12, 2)
+  currency           String              @default("GHS")
+  inclusions         String?
+  estimatedPickup    String?
+  estimatedDelivery  String?
+  terms              String?
+  validUntil         DateTime?
+  status             QuoteResponseStatus @default(SUBMITTED)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  quoteRequest     QuoteRequest     @relation(fields: [quoteRequestId], references: [id], onDelete: Cascade)
+  logisticsProfile LogisticsProfile @relation(fields: [logisticsProfileId], references: [id], onDelete: Cascade)
+  provider         User             @relation(fields: [providerUserId], references: [id], onDelete: Cascade)
+
+  @@unique([quoteRequestId, logisticsProfileId])
+  @@index([quoteRequestId])
+}
+
+// ---------------------------------------------------------------------------
+// Monetization placeholder (free listing first; upgrades later)
+// ---------------------------------------------------------------------------
+
+enum PlanType {
+  FREE
+  FEATURED
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+model Subscription {
+  id         String             @id @default(cuid())
+  businessId String
+  plan       PlanType           @default(FREE)
+  status     SubscriptionStatus @default(ACTIVE)
+  startedAt  DateTime           @default(now())
+  endsAt     DateTime?
+  createdAt  DateTime           @default(now())
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@index([businessId])
+}
+
+// ---------------------------------------------------------------------------
+// Notifications, analytics and audit
+// ---------------------------------------------------------------------------
+
+enum NotificationType {
+  CLAIM_STATUS
+  QUOTE_REQUEST
+  QUOTE_RESPONSE
+  COMMENT_MODERATION
+  LISTING_REVIEW
+  REPORT_UPDATE
+  SYSTEM
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String?
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+}
+
+enum AnalyticsEventType {
+  SEARCH
+  NO_RESULT_SEARCH
+  PROFILE_VIEW
+  CONTACT_CLICK
+  WHATSAPP_CLICK
+  EMAIL_CLICK
+  WEBSITE_CLICK
+  ORDER_CLICK
+  SHARE
+  LIKE
+  COMMENT
+  QUOTE_REQUEST_SUBMITTED
+  QUOTE_RESPONSE_SUBMITTED
+  CLAIM_SUBMITTED
+  REPORT_SUBMITTED
+  LOGISTICS_SEARCH
+}
+
+model AnalyticsEvent {
+  id                 String             @id @default(cuid())
+  type               AnalyticsEventType
+  userId             String?
+  businessId         String?
+  offeringId         String?
+  logisticsProfileId String?
+  quoteRequestId     String?
+  query              String?
+  sectorSlug         String?
+  regionSlug         String?
+  channel            String?
+  metadata           Json?
+  createdAt          DateTime           @default(now())
+
+  user             User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  business         Business?         @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  offering         Offering?         @relation(fields: [offeringId], references: [id], onDelete: Cascade)
+  logisticsProfile LogisticsProfile? @relation(fields: [logisticsProfileId], references: [id], onDelete: Cascade)
+  quoteRequest     QuoteRequest?     @relation(fields: [quoteRequestId], references: [id], onDelete: Cascade)
+
+  @@index([type, createdAt])
+  @@index([businessId, createdAt])
+  @@index([createdAt])
+}
+
+model AuditEvent {
+  id            String   @id @default(cuid())
+  actorId       String?
+  action        String
+  targetType    String?
+  targetId      String?
+  metadata      Json?
+  correlationId String?
+  ip            String?
+  createdAt     DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([action, createdAt])
+  @@index([actorId])
+  @@index([targetType, targetId])
+}
