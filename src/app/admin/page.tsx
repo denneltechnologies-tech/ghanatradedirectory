@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { analyticsSummary, getReportQueue, listBusinessesForAdmin } from "@/lib/services/admin";
+import { analyticsSummary, getReportQueue, getReviewQueue } from "@/lib/services/admin";
 import { getClaimQueue } from "@/lib/services/claims";
 import { humanizeEnum, timeAgo } from "@/lib/format";
 import { StatusBadge } from "@/components/badges";
@@ -12,7 +12,7 @@ export default async function AdminOverviewPage() {
     analyticsSummary(30),
     getClaimQueue(),
     getReportQueue(),
-    listBusinessesForAdmin("PENDING_REVIEW"),
+    getReviewQueue(),
   ]);
 
   return (

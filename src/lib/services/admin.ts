@@ -17,19 +17,154 @@ export async function getReviewQueue() {
   });
 }
 
-export async function listBusinessesForAdmin(status?: BusinessStatus) {
-  return prisma.business.findMany({
-    where: {
-      ...(status ? { status } : {}),
-      deletedAt: null,
+export async function listBusinessesForAdmin(params?: {
+  status?: BusinessStatus;
+  q?: string;
+  page?: number;
+  perPage?: number;
+}) {
+  const { status, q, page = 1, perPage = 50 } = params ?? {};
+  const skip = (page - 1) * perPage;
+
+  const where: any = {
+    deletedAt: null,
+    ...(status ? { status } : {}),
+  };
+
+  if (q && q.trim()) {
+    const term = q.trim();
+    where.OR = [
+      { name: { contains: term, mode: "insensitive" } },
+      { description: { contains: term, mode: "insensitive" } },
+      { phone: { contains: term, mode: "insensitive" } },
+      { website: { contains: term, mode: "insensitive" } },
+      { category: { name: { contains: term, mode: "insensitive" } } },
+    ];
+  }
+
+  const [items, total] = await Promise.all([
+    prisma.business.findMany({
+      where,
+      include: {
+        owner: { select: { displayName: true, email: true } },
+        category: { select: { name: true, slug: true } },
+        locations: { include: { region: { select: { name: true } }, district: { select: { name: true } } } },
+        _count: { select: { offerings: true, comments: true, likes: true } },
+      },
+      orderBy: { updatedAt: "desc" },
+      skip,
+      take: perPage,
+    }),
+    prisma.business.count({ where }),
+  ]);
+
+  return { items, total, page, perPage, totalPages: Math.ceil(total / perPage) };
+}
+
+export async function superAdminCreateBusiness(input: {
+  name: string;
+  categoryId: string;
+  description: string;
+  longDescription?: string;
+  phone?: string;
+  whatsapp?: string;
+  email?: string;
+  website?: string;
+  logoKey?: string;
+  featured?: boolean;
+  verificationLevel?: any;
+  status?: BusinessStatus;
+  regionId?: string;
+  districtId?: string;
+  locality?: string;
+  address?: string;
+  actorId: string;
+}) {
+  const baseSlug = slugify(input.name);
+  const slug = await uniqueSlug(baseSlug, async (candidate) => {
+    const found = await prisma.business.findUnique({ where: { slug: candidate }, select: { id: true } });
+    return Boolean(found);
+  });
+
+  return prisma.business.create({
+    data: {
+      name: input.name,
+      slug,
+      categoryId: input.categoryId,
+      ownerId: input.actorId,
+      description: input.description,
+      longDescription: input.longDescription || null,
+      phone: input.phone || null,
+      whatsapp: input.whatsapp || null,
+      email: input.email || null,
+      website: input.website || null,
+      logoKey: input.logoKey || null,
+      featured: input.featured ?? false,
+      verificationLevel: input.verificationLevel ?? "CAC_REGULATOR_ACCREDITED",
+      verifiedAt: input.verificationLevel && input.verificationLevel !== "UNVERIFIED" ? new Date() : null,
+      status: input.status ?? "PUBLISHED",
+      publishedAt: input.status !== "DRAFT" ? new Date() : null,
+      locations: input.regionId
+        ? {
+            create: {
+              regionId: input.regionId,
+              districtId: input.districtId || null,
+              locality: input.locality || null,
+              address: input.address || null,
+              isPublic: true,
+            },
+          }
+        : undefined,
     },
-    include: {
-      owner: { select: { displayName: true, email: true } },
-      category: { select: { name: true } },
-      _count: { select: { offerings: true, comments: true, likes: true } },
+  });
+}
+
+export async function deleteBusiness(businessId: string, actorId: string, note?: string) {
+  const business = await prisma.business.update({
+    where: { id: businessId },
+    data: {
+      deletedAt: new Date(),
+      status: "ARCHIVED",
     },
-    orderBy: { updatedAt: "desc" },
-    take: 200,
+  });
+
+  await prisma.moderationEvent.create({
+    data: {
+      action: "ARCHIVE_BUSINESS",
+      targetType: "BUSINESS",
+      targetId: businessId,
+      businessId,
+      actorId,
+      note: note || "Business removed by Super Administrator",
+    },
+  });
+
+  return business;
+}
+
+export async function updateBusinessDetails(
+  businessId: string,
+  data: {
+    name?: string;
+    categoryId?: string;
+    description?: string;
+    longDescription?: string;
+    phone?: string;
+    whatsapp?: string;
+    email?: string;
+    website?: string;
+    logoKey?: string;
+    status?: BusinessStatus;
+    verificationLevel?: any;
+    featured?: boolean;
+  },
+) {
+  return prisma.business.update({
+    where: { id: businessId },
+    data: {
+      ...data,
+      lastUpdatedAt: new Date(),
+    },
   });
 }
 

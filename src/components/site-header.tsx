@@ -16,7 +16,16 @@ export async function SiteHeader() {
             className="h-10 w-auto object-contain sm:h-12"
           />
         </Link>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-3">
+          {user && isStaff(user) ? (
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-brand-50 px-3 py-1.5 text-xs font-bold text-brand-700 border border-brand-200 hover:bg-brand-100 transition-colors shadow-2xs"
+            >
+              <span className="h-2 w-2 rounded-full bg-brand-600 animate-pulse" />
+              ⚡ Super Admin
+            </Link>
+          ) : null}
           <UserMenu
             user={
               user

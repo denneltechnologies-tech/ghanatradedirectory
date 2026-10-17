@@ -1,17 +1,22 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { isStaff } from "@/lib/permissions";
 import { logAudit } from "@/lib/audit";
 import {
   createDistrict,
+  deleteBusiness,
   deleteDistrict,
   resolveReport,
   setUserStatus,
+  superAdminCreateBusiness,
   toggleCategoryActive,
+  updateBusinessDetails,
   upsertCategory,
 } from "@/lib/services/admin";
+import { discoverAccurateLogo } from "@/lib/services/logo-discovery";
 import { categorySchema, claimDecisionSchema, districtSchema } from "@/lib/validation";
 import { decideClaim } from "@/lib/services/claims";
 import { prisma } from "@/lib/db";
@@ -27,6 +32,185 @@ async function staffActor() {
   const user = await requireUser();
   if (!isStaff(user)) throw new Error("FORBIDDEN");
   return user;
+}
+
+export async function quickApproveBusinessAction(formData: FormData): Promise<void> {
+  const user = await staffActor();
+  const businessId = String(formData.get("businessId") ?? "");
+
+  await prisma.business.update({
+    where: { id: businessId },
+    data: {
+      status: "PUBLISHED",
+      publishedAt: new Date(),
+      lastUpdatedAt: new Date(),
+    },
+  });
+
+  await prisma.moderationEvent.create({
+    data: {
+      action: "APPROVE_BUSINESS",
+      targetType: "BUSINESS",
+      targetId: businessId,
+      businessId,
+      actorId: user.id,
+      note: "Approved by Super Administrator",
+    },
+  });
+
+  await logAudit({
+    actorId: user.id,
+    action: "BUSINESS_QUICK_APPROVED",
+    targetType: "BUSINESS",
+    targetId: businessId,
+  });
+
+  revalidatePath("/admin/businesses");
+  revalidatePath("/admin");
+  revalidatePath("/search");
+  revalidatePath("/");
+}
+
+export async function deleteBusinessAction(formData: FormData): Promise<void> {
+  const user = await staffActor();
+  const businessId = String(formData.get("businessId") ?? "");
+  const note = String(formData.get("note") ?? "Removed by Super Administrator");
+
+  await deleteBusiness(businessId, user.id, note);
+
+  await logAudit({
+    actorId: user.id,
+    action: "BUSINESS_DELETED",
+    targetType: "BUSINESS",
+    targetId: businessId,
+    metadata: { note },
+  });
+
+  revalidatePath("/admin/businesses");
+  revalidatePath("/admin");
+  revalidatePath("/search");
+  revalidatePath("/");
+}
+
+export async function updateBusinessLogoAction(formData: FormData): Promise<void> {
+  const user = await staffActor();
+  const businessId = String(formData.get("businessId") ?? "");
+  const logoUrl = String(formData.get("logoUrl") ?? "").trim();
+
+  await updateBusinessDetails(businessId, { logoKey: logoUrl || undefined });
+
+  await logAudit({
+    actorId: user.id,
+    action: "BUSINESS_LOGO_UPDATED",
+    targetType: "BUSINESS",
+    targetId: businessId,
+    metadata: { logoUrl },
+  });
+
+  revalidatePath("/admin/businesses");
+  revalidatePath("/search");
+  revalidatePath("/");
+}
+
+export async function fetchAccurateLogoAction(formData: FormData): Promise<void> {
+  const user = await staffActor();
+  const businessId = String(formData.get("businessId") ?? "");
+
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { name: true, website: true },
+  });
+  if (!business) throw new Error("NOT_FOUND");
+
+  const result = await discoverAccurateLogo(business.name, business.website);
+  if (result.logoUrl || result.website) {
+    await prisma.business.update({
+      where: { id: businessId },
+      data: {
+        ...(result.logoUrl ? { logoKey: result.logoUrl } : {}),
+        ...(result.website && !business.website ? { website: result.website } : {}),
+        lastUpdatedAt: new Date(),
+      },
+    });
+
+    await logAudit({
+      actorId: user.id,
+      action: "BUSINESS_LOGO_DISCOVERED",
+      targetType: "BUSINESS",
+      targetId: businessId,
+      metadata: { logoUrl: result.logoUrl, source: result.source },
+    });
+  }
+
+  revalidatePath("/admin/businesses");
+  revalidatePath("/search");
+  revalidatePath("/");
+}
+
+export async function superAdminCreateBusinessAction(formData: FormData): Promise<void> {
+  const user = await staffActor();
+  const name = String(formData.get("name") ?? "").trim();
+  const categoryId = String(formData.get("categoryId") ?? "");
+  const description = String(formData.get("description") ?? "").trim();
+  const longDescription = String(formData.get("longDescription") ?? "").trim();
+  const phone = String(formData.get("phone") ?? "").trim();
+  const whatsapp = String(formData.get("whatsapp") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim();
+  const website = String(formData.get("website") ?? "").trim();
+  let logoKey = String(formData.get("logoKey") ?? "").trim();
+  const regionId = String(formData.get("regionId") ?? "").trim() || undefined;
+  const districtId = String(formData.get("districtId") ?? "").trim() || undefined;
+  const locality = String(formData.get("locality") ?? "").trim() || undefined;
+  const address = String(formData.get("address") ?? "").trim() || undefined;
+  const featured = formData.get("featured") === "true" || formData.get("featured") === "on";
+  const verificationLevel = String(formData.get("verificationLevel") ?? "CAC_REGULATOR_ACCREDITED") as VerificationLevel;
+  const status = (String(formData.get("status") ?? "PUBLISHED") as BusinessStatus) || "PUBLISHED";
+
+  if (!name || !categoryId || !description) {
+    throw new Error("Please fill in business name, sector, and description.");
+  }
+
+  if (!logoKey && website) {
+    const discovered = await discoverAccurateLogo(name, website);
+    if (discovered.logoUrl) {
+      logoKey = discovered.logoUrl;
+    }
+  }
+
+  const created = await superAdminCreateBusiness({
+    name,
+    categoryId,
+    description,
+    longDescription: longDescription || undefined,
+    phone: phone || undefined,
+    whatsapp: whatsapp || undefined,
+    email: email || undefined,
+    website: website || undefined,
+    logoKey: logoKey || undefined,
+    regionId,
+    districtId,
+    locality,
+    address,
+    featured,
+    verificationLevel,
+    status,
+    actorId: user.id,
+  });
+
+  await logAudit({
+    actorId: user.id,
+    action: "SUPER_ADMIN_CREATE_BUSINESS",
+    targetType: "BUSINESS",
+    targetId: created.id,
+    metadata: { name, slug: created.slug },
+  });
+
+  revalidatePath("/admin/businesses");
+  revalidatePath("/admin");
+  revalidatePath("/search");
+  revalidatePath("/");
+
+  redirect("/admin/businesses");
 }
 
 export async function setBusinessStatusAction(formData: FormData): Promise<void> {
