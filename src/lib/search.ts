@@ -142,26 +142,38 @@ export function businessOrderBy(sort?: string): Prisma.BusinessOrderByWithRelati
 export async function searchBusinesses(input: BusinessSearchInput) {
   const page = Math.max(1, input.page ?? 1);
   const perPage = Math.min(48, Math.max(1, input.perPage ?? 12));
-  const where = buildBusinessWhere(input);
 
-  const [items, total] = await Promise.all([
-    prisma.business.findMany({
-      where,
-      include: businessCardInclude,
-      orderBy: businessOrderBy(input.sort),
-      skip: (page - 1) * perPage,
-      take: perPage,
-    }),
-    prisma.business.count({ where }),
-  ]);
+  try {
+    const where = buildBusinessWhere(input);
 
-  return {
-    items,
-    total,
-    page,
-    perPage,
-    totalPages: Math.max(1, Math.ceil(total / perPage)),
-  };
+    const [items, total] = await Promise.all([
+      prisma.business.findMany({
+        where,
+        include: businessCardInclude,
+        orderBy: businessOrderBy(input.sort),
+        skip: (page - 1) * perPage,
+        take: perPage,
+      }),
+      prisma.business.count({ where }),
+    ]);
+
+    return {
+      items,
+      total,
+      page,
+      perPage,
+      totalPages: Math.max(1, Math.ceil(total / perPage)),
+    };
+  } catch (error) {
+    console.warn("Database offline or unreachable in searchBusinesses:", error);
+    return {
+      items: [],
+      total: 0,
+      page,
+      perPage,
+      totalPages: 1,
+    };
+  }
 }
 
 export function buildQueryString(
