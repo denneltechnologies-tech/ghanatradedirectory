@@ -18,18 +18,23 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(env.appUrl),
   title: {
-    default: "Ghana Business Directory — find trusted businesses across Ghana",
-    template: "%s · Ghana Business Directory",
+    default: "GhanaMarketTrade — Find and buy anything in Ghana",
+    template: "%s · GhanaMarketTrade",
   },
   description:
-    "Search Ghanaian businesses by sector and location, view products and services, and contact them directly. Request delivery and transport quotes from logistics providers.",
+    "Find and buy anything in Ghana. Search verified Ghanaian businesses by sector and location, view products and services, and contact them directly.",
+  icons: {
+    icon: "/app-icon.png",
+    apple: "/app-icon.png",
+  },
   openGraph: {
     type: "website",
-    siteName: "Ghana Business Directory",
+    siteName: "GhanaMarketTrade",
     locale: "en_GH",
-    title: "Ghana Business Directory",
+    title: "GhanaMarketTrade — Find and buy anything in Ghana",
     description:
-      "Discover trusted Ghanaian businesses and logistics providers. Search by sector, region and district.",
+      "Find and buy anything in Ghana. Discover trusted Ghanaian businesses, products, services, and logistics providers.",
+    images: ["/logo.png"],
   },
   twitter: { card: "summary_large_image" },
 };

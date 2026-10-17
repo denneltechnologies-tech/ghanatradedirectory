@@ -29,13 +29,13 @@ export default async function HomePage() {
       <section className="border-b border-ink-200 bg-gradient-to-b from-brand-50 to-white">
         <div className="container-page py-10 sm:py-14">
           <div className="max-w-2xl">
-            <span className="badge-brand">Ghana-wide directory · English</span>
+            <span className="badge-brand">GhanaMarketTrade · Official Directory</span>
             <h1 className="mt-3 text-3xl font-bold tracking-tight text-ink-900 sm:text-4xl">
-              Find trusted businesses across Ghana
+              Find and buy anything in Ghana
             </h1>
             <p className="mt-3 text-ink-600">
-              Search by sector, product or service and location. Call, message or visit the
-              business directly — and request a delivery or transport quote in the same place.
+              Search verified Ghanaian businesses by sector, products, services, and location.
+              Contact them directly via WhatsApp or phone, and arrange deliveries seamlessly.
             </p>
           </div>
           <div className="mt-6">

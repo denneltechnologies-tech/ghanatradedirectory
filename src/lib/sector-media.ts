@@ -43,68 +43,122 @@ export const DEFAULT_FALLBACK_COVER =
 
 // Real online logos for major Ghanaian institutions and companies
 export const KNOWN_BRAND_LOGOS: Record<string, string> = {
+  // Sample featured businesses
+  "accra tech hub": "https://www.google.com/s2/favicons?domain=hubtel.com&sz=256",
+  "sekondi coastal lodge": "https://www.google.com/s2/favicons?domain=theroyalsenchi.com&sz=256",
+  "mensah agro farms": "https://www.google.com/s2/favicons?domain=cocobod.gh&sz=256",
+  "volta freight": "https://www.google.com/s2/favicons?domain=intercitystc.com&sz=256",
+  "kente heritage": "https://www.google.com/s2/favicons?domain=motac.gov.gh&sz=256",
+  "tamale solar": "https://www.google.com/s2/favicons?domain=energycom.gov.gh&sz=256",
+  "wa community pharmacy": "https://www.google.com/s2/favicons?domain=pharmacycouncil.org.gh&sz=256",
+
+  // Telecom & Tech
   "mtn": "https://upload.wikimedia.org/wikipedia/commons/a/af/MTN_Logo.svg",
-  "telecel": "https://www.google.com/s2/favicons?domain=telecel.com.gh&sz=128",
-  "at ghana": "https://www.google.com/s2/favicons?domain=at.com.gh&sz=128",
-  "airteltigo": "https://www.google.com/s2/favicons?domain=at.com.gh&sz=128",
-  "ecobank": "https://www.google.com/s2/favicons?domain=ecobank.com&sz=128",
-  "absa": "https://www.google.com/s2/favicons?domain=absa.com.gh&sz=128",
-  "standard chartered": "https://www.google.com/s2/favicons?domain=sc.com&sz=128",
-  "stanbic": "https://www.google.com/s2/favicons?domain=stanbicbank.com.gh&sz=128",
+  "telecel": "https://www.google.com/s2/favicons?domain=telecel.com.gh&sz=256",
+  "vodafone": "https://www.google.com/s2/favicons?domain=telecel.com.gh&sz=256",
+  "at ghana": "https://www.google.com/s2/favicons?domain=at.com.gh&sz=256",
+  "airteltigo": "https://www.google.com/s2/favicons?domain=at.com.gh&sz=256",
+  "hubtel": "https://www.google.com/s2/favicons?domain=hubtel.com&sz=256",
+  "zeepay": "https://www.google.com/s2/favicons?domain=zeepay.com&sz=256",
+  "expresspay": "https://www.google.com/s2/favicons?domain=expresspaygh.com&sz=256",
+
+  // Universal Banks
+  "ecobank": "https://www.google.com/s2/favicons?domain=ecobank.com&sz=256",
+  "absa": "https://www.google.com/s2/favicons?domain=absa.com.gh&sz=256",
+  "standard chartered": "https://www.google.com/s2/favicons?domain=sc.com&sz=256",
+  "stanbic": "https://www.google.com/s2/favicons?domain=stanbicbank.com.gh&sz=256",
   "gcb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3d/GCBBANK.jpg/500px-GCBBANK.jpg",
-  "fidelity": "https://www.google.com/s2/favicons?domain=fidelitybank.com.gh&sz=128",
-  "zenith": "https://www.google.com/s2/favicons?domain=zenithbank.com.gh&sz=128",
-  "calbank": "https://www.google.com/s2/favicons?domain=calbank.net&sz=128",
-  "access bank": "https://www.google.com/s2/favicons?domain=accessbankplc.com&sz=128",
-  "cbg": "https://www.google.com/s2/favicons?domain=cbg.com.gh&sz=128",
-  "first national bank": "https://www.google.com/s2/favicons?domain=firstnationalbank.com.gh&sz=128",
-  "gtbank": "https://www.google.com/s2/favicons?domain=gtbghana.com&sz=128",
-  "republic bank": "https://www.google.com/s2/favicons?domain=republicghana.com&sz=128",
-  "uba": "https://www.google.com/s2/favicons?domain=ubagroup.com&sz=128",
-  "fbnbank": "https://www.google.com/s2/favicons?domain=fbnbankghana.com&sz=128",
-  "agricultural development bank": "https://www.google.com/s2/favicons?domain=agricbank.com&sz=128",
-  "prudential bank": "https://www.google.com/s2/favicons?domain=prudentialbank.com.gh&sz=128",
-  "societe generale": "https://www.google.com/s2/favicons?domain=societegenerale.com.gh&sz=128",
-  "bank of africa": "https://www.google.com/s2/favicons?domain=bankofafrica.com.gh&sz=128",
-  "first atlantic": "https://www.google.com/s2/favicons?domain=firstatlanticbank.com.gh&sz=128",
-  "omnibsic": "https://www.google.com/s2/favicons?domain=omnibsiconline.com&sz=128",
-  "goil": "https://www.google.com/s2/favicons?domain=goil.com.gh&sz=128",
-  "vivo energy": "https://www.google.com/s2/favicons?domain=vivoenergy.com&sz=128",
-  "shell": "https://www.google.com/s2/favicons?domain=vivoenergy.com&sz=128",
-  "totalenergies": "https://www.google.com/s2/favicons?domain=totalenergies.com.gh&sz=128",
-  "star oil": "https://www.google.com/s2/favicons?domain=staroil.com&sz=128",
-  "bost": "https://www.google.com/s2/favicons?domain=bost.com.gh&sz=128",
-  "ecg": "https://www.google.com/s2/favicons?domain=ecg.com.gh&sz=128",
-  "vra": "https://www.google.com/s2/favicons?domain=vra.com&sz=128",
-  "gridco": "https://www.google.com/s2/favicons?domain=gridcogh.com&sz=128",
-  "cocobod": "https://www.google.com/s2/favicons?domain=cocobod.gh&sz=128",
-  "kempinski": "https://www.google.com/s2/favicons?domain=kempinski.com&sz=128",
-  "movenpick": "https://www.google.com/s2/favicons?domain=movenpick.com&sz=128",
-  "marriott": "https://www.google.com/s2/favicons?domain=marriott.com&sz=128",
-  "labadi beach": "https://www.google.com/s2/favicons?domain=labadibeachhotelgh.com&sz=128",
-  "senchi": "https://www.google.com/s2/favicons?domain=theroyalsenchi.com&sz=128",
-  "nyaho": "https://www.google.com/s2/favicons?domain=nyahomedical.com&sz=128",
-  "korle bu": "https://www.google.com/s2/favicons?domain=korlebu.gov.gh&sz=128",
-  "trust hospital": "https://www.google.com/s2/favicons?domain=thetrusthospital.com&sz=128",
-  "ernest chemists": "https://www.google.com/s2/favicons?domain=ernestchemists.com&sz=128",
-  "tobinco": "https://www.google.com/s2/favicons?domain=tobinco.com&sz=128",
-  "kinapharma": "https://www.google.com/s2/favicons?domain=kinapharma.com&sz=128",
-  "kasapreko": "https://www.google.com/s2/favicons?domain=kasapreko.com&sz=128",
-  "fan milk": "https://www.google.com/s2/favicons?domain=fanmilk-gh.com&sz=128",
-  "unilever": "https://www.google.com/s2/favicons?domain=unilever.com&sz=128",
-  "melcom": "https://www.google.com/s2/favicons?domain=melcom.com&sz=128",
-  "intercity stc": "https://www.google.com/s2/favicons?domain=intercitystc.com&sz=128",
-  "gold fields": "https://www.google.com/s2/favicons?domain=goldfields.com&sz=128",
-  "anglogold": "https://www.google.com/s2/favicons?domain=anglogoldashanti.com&sz=128",
-  "newmont": "https://www.google.com/s2/favicons?domain=newmont.com&sz=128",
-  "enterprise": "https://www.google.com/s2/favicons?domain=enterprise.com.gh&sz=128",
-  "sic insurance": "https://www.google.com/s2/favicons?domain=sic-gh.com&sz=128",
-  "star assurance": "https://www.google.com/s2/favicons?domain=starassurance.com&sz=128",
-  "hubtel": "https://www.google.com/s2/favicons?domain=hubtel.com&sz=128",
-  "zeepay": "https://www.google.com/s2/favicons?domain=zeepay.com&sz=128",
-  "devtraco": "https://www.google.com/s2/favicons?domain=devtraco.com&sz=128",
-  "clifton homes": "https://www.google.com/s2/favicons?domain=cliftonhomes.com&sz=128",
-  "ghacem": "https://www.google.com/s2/favicons?domain=ghacem.com&sz=128",
+  "fidelity": "https://www.google.com/s2/favicons?domain=fidelitybank.com.gh&sz=256",
+  "zenith": "https://www.google.com/s2/favicons?domain=zenithbank.com.gh&sz=256",
+  "calbank": "https://www.google.com/s2/favicons?domain=calbank.net&sz=256",
+  "access bank": "https://www.google.com/s2/favicons?domain=accessbankplc.com&sz=256",
+  "cbg": "https://www.google.com/s2/favicons?domain=cbg.com.gh&sz=256",
+  "consolidated bank": "https://www.google.com/s2/favicons?domain=cbg.com.gh&sz=256",
+  "first national bank": "https://www.google.com/s2/favicons?domain=firstnationalbank.com.gh&sz=256",
+  "gtbank": "https://www.google.com/s2/favicons?domain=gtbghana.com&sz=256",
+  "republic bank": "https://www.google.com/s2/favicons?domain=republicghana.com&sz=256",
+  "uba": "https://www.google.com/s2/favicons?domain=ubagroup.com&sz=256",
+  "fbnbank": "https://www.google.com/s2/favicons?domain=fbnbankghana.com&sz=256",
+  "agricultural development bank": "https://www.google.com/s2/favicons?domain=agricbank.com&sz=256",
+  "adb": "https://www.google.com/s2/favicons?domain=agricbank.com&sz=256",
+  "prudential bank": "https://www.google.com/s2/favicons?domain=prudentialbank.com.gh&sz=256",
+  "societe generale": "https://www.google.com/s2/favicons?domain=societegenerale.com.gh&sz=256",
+  "bank of africa": "https://www.google.com/s2/favicons?domain=bankofafrica.com.gh&sz=256",
+  "first atlantic": "https://www.google.com/s2/favicons?domain=firstatlanticbank.com.gh&sz=256",
+  "omnibsic": "https://www.google.com/s2/favicons?domain=omnibsiconline.com&sz=256",
+  "national investment bank": "https://www.google.com/s2/favicons?domain=nib-ghana.com&sz=256",
+  "nib": "https://www.google.com/s2/favicons?domain=nib-ghana.com&sz=256",
+
+  // Energy & Petroleum
+  "goil": "https://www.google.com/s2/favicons?domain=goil.com.gh&sz=256",
+  "vivo energy": "https://www.google.com/s2/favicons?domain=vivoenergy.com&sz=256",
+  "shell": "https://www.google.com/s2/favicons?domain=vivoenergy.com&sz=256",
+  "totalenergies": "https://www.google.com/s2/favicons?domain=totalenergies.com.gh&sz=256",
+  "total": "https://www.google.com/s2/favicons?domain=totalenergies.com.gh&sz=256",
+  "star oil": "https://www.google.com/s2/favicons?domain=staroil.com&sz=256",
+  "petrosol": "https://www.google.com/s2/favicons?domain=petrosolgh.com&sz=256",
+  "puma energy": "https://www.google.com/s2/favicons?domain=pumaenergy.com&sz=256",
+  "frimps": "https://www.google.com/s2/favicons?domain=frimpsoil.com&sz=256",
+  "bost": "https://www.google.com/s2/favicons?domain=bost.com.gh&sz=256",
+  "ecg": "https://www.google.com/s2/favicons?domain=ecg.com.gh&sz=256",
+  "vra": "https://www.google.com/s2/favicons?domain=vra.com&sz=256",
+  "gridco": "https://www.google.com/s2/favicons?domain=gridcogh.com&sz=256",
+
+  // Healthcare & Hospitals
+  "nyaho": "https://www.google.com/s2/favicons?domain=nyahomedical.com&sz=256",
+  "korle bu": "https://www.google.com/s2/favicons?domain=korlebu.gov.gh&sz=256",
+  "trust hospital": "https://www.google.com/s2/favicons?domain=thetrusthospital.com&sz=256",
+  "37 military": "https://www.google.com/s2/favicons?domain=gaf.mil.gh&sz=256",
+  "ridge hospital": "https://www.google.com/s2/favicons?domain=garh.gov.gh&sz=256",
+  "komfo anokye": "https://www.google.com/s2/favicons?domain=kath.gov.gh&sz=256",
+  "ernest chemists": "https://www.google.com/s2/favicons?domain=ernestchemists.com&sz=256",
+  "tobinco": "https://www.google.com/s2/favicons?domain=tobinco.com&sz=256",
+  "kinapharma": "https://www.google.com/s2/favicons?domain=kinapharma.com&sz=256",
+
+  // Hotels & Hospitality
+  "kempinski": "https://www.google.com/s2/favicons?domain=kempinski.com&sz=256",
+  "movenpick": "https://www.google.com/s2/favicons?domain=movenpick.com&sz=256",
+  "marriott": "https://www.google.com/s2/favicons?domain=marriott.com&sz=256",
+  "labadi beach": "https://www.google.com/s2/favicons?domain=labadibeachhotelgh.com&sz=256",
+  "senchi": "https://www.google.com/s2/favicons?domain=theroyalsenchi.com&sz=256",
+  "tang palace": "https://www.google.com/s2/favicons?domain=tangpalacehotel.com.gh&sz=256",
+  "alisa": "https://www.google.com/s2/favicons?domain=alisahotels.com&sz=256",
+
+  // Manufacturing, Retail & Food
+  "cocobod": "https://www.google.com/s2/favicons?domain=cocobod.gh&sz=256",
+  "kasapreko": "https://www.google.com/s2/favicons?domain=kasapreko.com&sz=256",
+  "fan milk": "https://www.google.com/s2/favicons?domain=fanmilk-gh.com&sz=256",
+  "unilever": "https://www.google.com/s2/favicons?domain=unilever.com&sz=256",
+  "melcom": "https://www.google.com/s2/favicons?domain=melcom.com&sz=256",
+  "shoprite": "https://www.google.com/s2/favicons?domain=shoprite.com&sz=256",
+  "game": "https://www.google.com/s2/favicons?domain=game.co.za&sz=256",
+
+  // Transport & Logistics
+  "intercity stc": "https://www.google.com/s2/favicons?domain=intercitystc.com&sz=256",
+  "stc": "https://www.google.com/s2/favicons?domain=intercitystc.com&sz=256",
+  "africa world airlines": "https://www.google.com/s2/favicons?domain=flyafricaworld.com&sz=256",
+  "passion air": "https://www.google.com/s2/favicons?domain=flypassionair.com&sz=256",
+  "bolt": "https://www.google.com/s2/favicons?domain=bolt.eu&sz=256",
+  "uber": "https://www.google.com/s2/favicons?domain=uber.com&sz=256",
+  "yango": "https://www.google.com/s2/favicons?domain=yango.com&sz=256",
+
+  // Mining & Heavy Materials
+  "gold fields": "https://www.google.com/s2/favicons?domain=goldfields.com&sz=256",
+  "anglogold": "https://www.google.com/s2/favicons?domain=anglogoldashanti.com&sz=256",
+  "newmont": "https://www.google.com/s2/favicons?domain=newmont.com&sz=256",
+  "ghacem": "https://www.google.com/s2/favicons?domain=ghacem.com&sz=256",
+  "cimaf": "https://www.google.com/s2/favicons?domain=cimaf.com&sz=256",
+  "dangote": "https://www.google.com/s2/favicons?domain=dangote.com&sz=256",
+
+  // Insurance & Real Estate
+  "enterprise": "https://www.google.com/s2/favicons?domain=enterprise.com.gh&sz=256",
+  "sic insurance": "https://www.google.com/s2/favicons?domain=sic-gh.com&sz=256",
+  "star assurance": "https://www.google.com/s2/favicons?domain=starassurance.com&sz=256",
+  "glico": "https://www.google.com/s2/favicons?domain=glicogroup.com&sz=256",
+  "hollard": "https://www.google.com/s2/favicons?domain=hollard.com.gh&sz=256",
+  "devtraco": "https://www.google.com/s2/favicons?domain=devtraco.com&sz=256",
+  "clifton homes": "https://www.google.com/s2/favicons?domain=cliftonhomes.com&sz=256",
+  "trasacco": "https://www.google.com/s2/favicons?domain=trasaccogroup.com&sz=256",
 };
 
 export function extractDomain(url?: string | null): string | null {
@@ -147,10 +201,28 @@ export function getBusinessCover(business: {
   return getSectorDefaultCover(sectorSlug);
 }
 
+export const REGULATOR_LOGOS: Record<string, string> = {
+  "hospitality-tourism": "https://www.google.com/s2/favicons?domain=visitghana.com&sz=256",
+  "hotels-lodges": "https://www.google.com/s2/favicons?domain=visitghana.com&sz=256",
+  "health-wellness": "https://www.google.com/s2/favicons?domain=pharmacycouncil.org.gh&sz=256",
+  "pharmacies": "https://www.google.com/s2/favicons?domain=pharmacycouncil.org.gh&sz=256",
+  "banking-financial-services": "https://www.google.com/s2/favicons?domain=bog.gov.gh&sz=256",
+  "transport-logistics": "https://www.google.com/s2/favicons?domain=dvla.gov.gh&sz=256",
+  "automotive": "https://www.google.com/s2/favicons?domain=dvla.gov.gh&sz=256",
+  "education-training": "https://www.google.com/s2/favicons?domain=ges.gov.gh&sz=256",
+  "agriculture-agri-business": "https://www.google.com/s2/favicons?domain=mofa.gov.gh&sz=256",
+  "technology-it": "https://www.google.com/s2/favicons?domain=nca.org.gh&sz=256",
+  "food-beverages": "https://www.google.com/s2/favicons?domain=fdaghana.gov.gh&sz=256",
+  "retail-general-trade": "https://www.google.com/s2/favicons?domain=ghanastradinghub.gov.gh&sz=256",
+  "manufacturing-industrial": "https://www.google.com/s2/favicons?domain=agighana.org&sz=256",
+  "real-estate-property": "https://www.google.com/s2/favicons?domain=gredaonline.org&sz=256",
+};
+
 export function getBusinessLogo(business: {
   logoKey?: string | null;
   website?: string | null;
   name: string;
+  category?: { slug?: string; name?: string; parent?: { slug?: string; name?: string } | null } | null;
 }): string | null {
   if (business.logoKey) {
     const url = mediaUrl(business.logoKey);
@@ -158,7 +230,7 @@ export function getBusinessLogo(business: {
   }
   const domain = extractDomain(business.website);
   if (domain && !domain.includes("facebook.com") && !domain.includes("instagram.com")) {
-    return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+    return `https://www.google.com/s2/favicons?domain=${domain}&sz=256`;
   }
   const lowerName = business.name.toLowerCase();
   for (const [key, logoUrl] of Object.entries(KNOWN_BRAND_LOGOS)) {
@@ -166,7 +238,19 @@ export function getBusinessLogo(business: {
       return logoUrl;
     }
   }
-  return null;
+  const sectorSlug =
+    business.category?.parent?.slug ??
+    business.category?.slug ??
+    business.category?.parent?.name?.toLowerCase() ??
+    business.category?.name?.toLowerCase();
+  if (sectorSlug) {
+    for (const [key, regUrl] of Object.entries(REGULATOR_LOGOS)) {
+      if (sectorSlug.includes(key) || key.includes(sectorSlug)) {
+        return regUrl;
+      }
+    }
+  }
+  return "https://www.google.com/s2/favicons?domain=ghanastradinghub.gov.gh&sz=256";
 }
 
 export type SectorOfferingItem = {

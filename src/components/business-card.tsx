@@ -2,10 +2,9 @@ import Link from "next/link";
 import { initials, truncate } from "@/lib/format";
 import { VerificationBadge } from "@/components/badges";
 import type { BusinessCard as BusinessCardType } from "@/lib/search";
-import { getBusinessCover, getBusinessLogo } from "@/lib/sector-media";
+import { getBusinessLogo } from "@/lib/sector-media";
 
 export function BusinessCard({ business }: { business: BusinessCardType }) {
-  const cover = getBusinessCover(business);
   const logo = getBusinessLogo(business);
   const location = business.locations[0];
   const place = [location?.locality, location?.district?.name, location?.region?.name]
@@ -15,32 +14,26 @@ export function BusinessCard({ business }: { business: BusinessCardType }) {
   return (
     <Link
       href={`/businesses/${business.slug}`}
-      className="card card-hover group flex h-full flex-col overflow-hidden"
+      className="card card-hover group flex h-full flex-col overflow-hidden bg-white"
     >
-      <div className="relative h-40 w-full overflow-hidden bg-ink-100">
-        <img
-          src={cover}
-          alt={`${business.name} cover`}
-          loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-        />
-        {/* Brand logo avatar badge */}
-        <div className="absolute bottom-2.5 left-2.5 flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl border-2 border-white bg-white shadow-md">
-          {logo ? (
-            <img
-              src={logo}
-              alt={`${business.name} logo`}
-              className="h-full w-full object-contain p-1"
-              loading="lazy"
-            />
-          ) : (
-            <span className="flex h-full w-full items-center justify-center bg-brand-700 text-xs font-bold text-white">
+      <div className="relative flex h-44 w-full items-center justify-center overflow-hidden bg-gradient-to-b from-slate-50 to-white border-b border-ink-100 p-6">
+        {logo ? (
+          <img
+            src={logo}
+            alt={`${business.name} logo`}
+            loading="lazy"
+            className="max-h-28 max-w-[85%] object-contain drop-shadow-xs transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-2">
+            <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 text-2xl font-bold border border-brand-100 shadow-xs">
               {initials(business.name)}
             </span>
-          )}
-        </div>
+            <span className="text-xs font-medium text-ink-500">{business.category?.name}</span>
+          </div>
+        )}
         {business.featured ? (
-          <span className="badge-gold absolute top-2.5 right-2.5 shadow-sm">Featured</span>
+          <span className="badge-gold absolute top-2.5 right-2.5 shadow-xs">Featured</span>
         ) : null}
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4 pt-3">

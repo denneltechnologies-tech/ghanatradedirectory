@@ -5,14 +5,15 @@ export function SiteFooter() {
     <footer className="mt-16 border-t border-ink-200 bg-white">
       <div className="container-page grid gap-8 py-10 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <div className="flex items-center gap-2 font-bold text-ink-900">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-xs font-black text-white">
-              GH
-            </span>
-            Ghana Business Directory
-          </div>
+          <Link href="/" className="inline-block">
+            <img
+              src="/logo.png"
+              alt="GhanaMarketTrade"
+              className="h-9 w-auto object-contain"
+            />
+          </Link>
           <p className="mt-3 text-sm text-ink-600">
-            Find trusted Ghanaian businesses and logistics providers, then contact them directly.
+            Find and buy anything in Ghana. Connect directly with trusted Ghanaian businesses, verified commercial providers, and logistics services.
           </p>
         </div>
         <div>

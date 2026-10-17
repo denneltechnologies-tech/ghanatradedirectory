@@ -19,7 +19,7 @@ import { ReportDialog } from "@/components/report-dialog";
 import { CommentSection } from "@/components/comment-section";
 import { ClaimForm } from "@/components/claim-form";
 import { businessCardInclude } from "@/lib/search";
-import { getBusinessCover, getBusinessLogo } from "@/lib/sector-media";
+import { getBusinessLogo } from "@/lib/sector-media";
 import { BusinessOfferingsSection } from "@/components/business-offerings-section";
 
 const getBusiness = cache(async (slug: string) => getPublicBusiness(slug));
@@ -32,15 +32,15 @@ export async function generateMetadata({
   const { slug } = await params;
   const business = await getBusiness(slug);
   if (!business) return { title: "Business not found" };
-  const cover = getBusinessCover(business);
+  const logo = getBusinessLogo(business);
   return {
-    title: business.name,
+    title: `${business.name} — GhanaMarketTrade`,
     description: truncate(business.description, 155),
     alternates: { canonical: `/businesses/${business.slug}` },
     openGraph: {
-      title: business.name,
+      title: `${business.name} — GhanaMarketTrade`,
       description: truncate(business.description, 200),
-      images: cover ? [cover] : undefined,
+      images: logo ? [logo] : ["/logo.png"],
     },
   };
 }
@@ -80,7 +80,6 @@ export default async function BusinessProfilePage({
   ]);
 
   const isOwner = user ? await canManageBusiness(user, business.id) : false;
-  const cover = getBusinessCover(business);
   const logo = getBusinessLogo(business);
   const location = business.locations[0];
   const mapQuery = mapsHref([
@@ -95,8 +94,20 @@ export default async function BusinessProfilePage({
 
   return (
     <div className="container-page py-6">
-      <div className="relative mb-4 h-48 w-full overflow-hidden rounded-xl bg-ink-100 sm:h-64 shadow-xs">
-        <img src={cover} alt={`${business.name} cover`} className="h-full w-full object-cover" />
+      <div className="relative mb-4 flex h-44 w-full items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-brand-50/40 via-white to-slate-50 border border-ink-100 p-6 sm:h-52 shadow-2xs">
+        {logo ? (
+          <img
+            src={logo}
+            alt={`${business.name} logo`}
+            className="max-h-28 max-w-[80%] object-contain drop-shadow-xs"
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-2">
+            <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-600 text-2xl font-bold text-white shadow-xs">
+              {initials(business.name)}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
