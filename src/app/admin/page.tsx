@@ -17,6 +17,42 @@ export default async function AdminOverviewPage() {
 
   return (
     <div className="space-y-6">
+      {/* Super Admin Quick Actions & Export Banner */}
+      <div className="card p-5 bg-gradient-to-r from-brand-900 via-brand-800 to-indigo-950 text-white shadow-md">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-semibold text-brand-200">
+              ⚡ Super Administrator Console
+            </div>
+            <h1 className="mt-1 text-xl font-bold text-white">Full Directory &amp; Platform Controls</h1>
+            <p className="mt-1 text-xs text-brand-200/90 max-w-2xl">
+              Manage all aspects of the directory: approve or remove businesses, configure sectors, inspect claims, moderate users, and export directory datasets.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href="/admin/businesses/new"
+              className="rounded-lg bg-emerald-500 hover:bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm transition inline-flex items-center gap-1.5"
+            >
+              <span>➕</span> Add Business
+            </Link>
+            <Link
+              href="/admin/export"
+              className="rounded-lg bg-white/20 hover:bg-white/30 backdrop-blur px-3.5 py-2 text-xs font-bold text-white shadow-sm transition inline-flex items-center gap-1.5"
+            >
+              <span>📥</span> Data Export Center
+            </Link>
+            <a
+              href="/api/admin/export/businesses?format=csv"
+              download
+              className="rounded-lg bg-white text-ink-900 hover:bg-ink-100 px-3.5 py-2 text-xs font-bold shadow-sm transition inline-flex items-center gap-1.5"
+            >
+              <span>📊</span> Instant CSV Export
+            </a>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {[
           { label: "Published businesses", value: summary.publishedBusinesses },

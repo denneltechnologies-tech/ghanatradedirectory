@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/db";
 import { uniqueSlug } from "@/lib/slug";
 import { slugify } from "@/lib/slug";
+import { logAudit } from "@/lib/audit";
 import type { CategoryInput, DistrictInput } from "@/lib/validation";
-import type { BusinessStatus, CommentStatus, ReportStatus, UserStatus } from "@/generated/prisma/enums";
+import type { BusinessStatus, CommentStatus, ReportStatus, UserRole, UserStatus } from "@/generated/prisma/enums";
 
 export async function getReviewQueue() {
   return prisma.business.findMany({
@@ -343,6 +344,25 @@ export async function setUserStatus(input: {
       actorId: input.actorId,
       note: `Status set to ${input.status}`,
     },
+  });
+  return user;
+}
+
+export async function setUserRole(input: {
+  userId: string;
+  actorId: string;
+  role: UserRole;
+}) {
+  const user = await prisma.user.update({
+    where: { id: input.userId },
+    data: { role: input.role },
+  });
+  await logAudit({
+    actorId: input.actorId,
+    action: "UPDATE_USER_ROLE",
+    targetType: "USER",
+    targetId: input.userId,
+    metadata: { role: input.role },
   });
   return user;
 }

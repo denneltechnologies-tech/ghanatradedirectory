@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { listUsers } from "@/lib/services/admin";
-import { setUserStatusAction } from "@/actions/admin";
+import { setUserRoleAction, setUserStatusAction } from "@/actions/admin";
 import { formatDate, humanizeEnum } from "@/lib/format";
 import { RoleBadge, UserStatusBadge } from "@/components/badges";
 
@@ -54,7 +54,26 @@ export default async function AdminUsersPage({
                   {user.phone ? <div className="text-xs text-ink-400">{user.phone}</div> : null}
                 </td>
                 <td>
-                  <RoleBadge role={user.role} />
+                  <div className="space-y-1.5">
+                    <RoleBadge role={user.role} />
+                    <form action={setUserRoleAction} className="flex items-center gap-1">
+                      <input type="hidden" name="userId" value={user.id} />
+                      <select
+                        name="role"
+                        defaultValue={user.role}
+                        className="rounded border border-ink-200 bg-white px-1.5 py-0.5 text-xs text-ink-700 font-medium"
+                      >
+                        <option value="CUSTOMER">Customer</option>
+                        <option value="BUSINESS_OWNER">Owner</option>
+                        <option value="MODERATOR">Moderator</option>
+                        <option value="ADMIN">Admin</option>
+                        <option value="LOGISTICS_PROVIDER">Logistics</option>
+                      </select>
+                      <button type="submit" className="rounded bg-ink-100 hover:bg-ink-200 px-1.5 py-0.5 text-xs text-ink-700 font-medium">
+                        Save
+                      </button>
+                    </form>
+                  </div>
                 </td>
                 <td>
                   <UserStatusBadge status={user.status} />

@@ -10,6 +10,7 @@ import {
   deleteBusiness,
   deleteDistrict,
   resolveReport,
+  setUserRole,
   setUserStatus,
   superAdminCreateBusiness,
   toggleCategoryActive,
@@ -24,6 +25,7 @@ import type {
   BusinessStatus,
   ClaimStatus,
   ReportStatus,
+  UserRole,
   UserStatus,
   VerificationLevel,
 } from "@/generated/prisma/enums";
@@ -438,5 +440,14 @@ export async function setUserStatusAction(formData: FormData): Promise<void> {
   const status = String(formData.get("status") ?? "ACTIVE") as UserStatus;
   if (userId === user.id) throw new Error("FORBIDDEN");
   await setUserStatus({ userId, actorId: user.id, status });
+  revalidatePath("/admin/users");
+}
+
+export async function setUserRoleAction(formData: FormData): Promise<void> {
+  const user = await staffActor();
+  const userId = String(formData.get("userId") ?? "");
+  const role = String(formData.get("role") ?? "CUSTOMER") as UserRole;
+  if (userId === user.id) throw new Error("Cannot change your own role");
+  await setUserRole({ userId, actorId: user.id, role });
   revalidatePath("/admin/users");
 }

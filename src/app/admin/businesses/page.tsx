@@ -64,7 +64,30 @@ export default async function AdminBusinessesPage({
             Approve, manage, verify, enrich logos, or remove businesses across the Ghana trade directory.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <a
+            href="/api/admin/export/businesses?format=csv"
+            download
+            className="btn-secondary btn-sm inline-flex items-center gap-1.5 shadow-sm"
+            title="Export all directory businesses to Excel CSV"
+          >
+            <span>📥</span> Export CSV
+          </a>
+          <a
+            href="/api/admin/export/businesses?format=json"
+            download
+            className="btn-secondary btn-sm inline-flex items-center gap-1.5 shadow-sm"
+            title="Export complete directory to JSON"
+          >
+            <span>💾</span> Export JSON
+          </a>
+          <Link
+            href="/admin/export"
+            className="btn-secondary btn-sm inline-flex items-center gap-1.5"
+            title="Open Export Center with custom filters"
+          >
+            <span>⚙️</span> Export Center
+          </Link>
           <Link
             href="/admin/businesses/new"
             className="btn-primary btn-sm inline-flex items-center gap-1.5 shadow-sm"
